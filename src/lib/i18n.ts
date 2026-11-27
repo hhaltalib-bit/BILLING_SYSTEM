@@ -479,6 +479,11 @@ const pageTranslations: Record<string, { en: string }> = {
   "الراتب مضاف مسبقاً لشهر": { en: "Salary already added for" },
   // ── AI Subscriptions category ──
   "اشتراكات الذكاء الاصطناعي": { en: "AI Subscriptions" },
+  // ── Gold purchase: grams / mithqal dual input ──
+  "الكمية": { en: "Quantity" },
+  "غرام": { en: "grams" },
+  "مثال: 25.74": { en: "e.g. 25.74" },
+  "أدخل الكمية بالمثقال أو الغرام": { en: "Enter the quantity in mithqal or grams" },
   // ── Cat Food & Snacks categories ──
   "أكل القطط": { en: "Cat Food" },
   "سناكس": { en: "Snacks" },
