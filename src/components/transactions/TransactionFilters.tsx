@@ -1,6 +1,7 @@
 'use client'
 
 import { useT } from '@/lib/i18n'
+import { categoryEmoji } from '@/lib/categoryIcons'
 import type { Category, Transaction } from '@/types/transaction'
 
 export interface FilterState {
@@ -93,7 +94,7 @@ export function TransactionFilters({ filters, categories, onChange, onClear }: P
           style={inputStyle}
         >
           <option value="">{t('كل الفئات')}</option>
-          {categories.map((c) => <option key={c.id} value={c.id}>{t(c.name)}</option>)}
+          {categories.map((c) => <option key={c.id} value={c.id}>{categoryEmoji(c.icon)} {t(c.name)}</option>)}
         </select>
       )}
 

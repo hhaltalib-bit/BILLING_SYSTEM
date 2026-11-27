@@ -4,7 +4,8 @@ import { NumericInput } from '@/components/ui/NumericInput'
 import { useT } from '@/lib/i18n'
 
 import { useState, useTransition } from 'react'
-import { addTransaction, deleteTransaction } from '@/app/(dashboard)/transactions/actions'
+import { addTransaction, deleteTransaction, addCategory } from '@/app/(dashboard)/transactions/actions'
+import { categoryEmoji, CATEGORY_EMOJI_CHOICES } from '@/lib/categoryIcons'
 import { showUndoToast } from '@/lib/useUndoToast'
 import type { Wallet, Category, TxType, Currency } from '@/types/transaction'
 import { X } from 'lucide-react'
@@ -35,7 +36,41 @@ export function AddTransactionModal({ wallets, categories, onClose, onSuccess }:
   const [error, setError]         = useState('')
   const [isPending, startTransition] = useTransition()
 
-  const filteredCats = categories.filter(
+  // Inline "add category" — new categories are added to this list immediately
+  const [cats, setCats]                       = useState<Category[]>(categories)
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryIcon, setNewCategoryIcon] = useState<string>('📦')
+  const [addingCategory, setAddingCategory]   = useState(false)
+  const [categoryError, setCategoryError]     = useState('')
+
+  async function handleAddCategory() {
+    const name = newCategoryName.trim()
+    if (!name || addingCategory) return
+    setAddingCategory(true)
+    setCategoryError('')
+    try {
+      const result = await addCategory(name, newCategoryIcon)
+      if (result.success && result.category) {
+        const created = result.category
+        setCats((prev) => [...prev, created])
+        setCategoryId(created.id)            // select the new category
+        setShowAddCategory(false)
+        setNewCategoryName('')
+        setNewCategoryIcon('📦')
+        // other open views (transactions page, Topbar's cached form data) reload
+        window.dispatchEvent(new Event('finova:data-changed'))
+      } else {
+        setCategoryError(tr(result.error ?? 'حدث خطأ'))
+      }
+    } catch (err) {
+      setCategoryError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setAddingCategory(false)
+    }
+  }
+
+  const filteredCats = cats.filter(
     (c) => c.type === type || c.type === 'both'
   )
 
@@ -213,9 +248,79 @@ export function AddTransactionModal({ wallets, categories, onClose, onSuccess }:
               >
                 <option value="">{tr('— بدون فئة —')}</option>
                 {filteredCats.map((c) => (
-                  <option key={c.id} value={c.id}>{tr(c.name)}</option>
+                  <option key={c.id} value={c.id}>{categoryEmoji(c.icon)} {tr(c.name)}</option>
                 ))}
               </select>
+
+              {!showAddCategory ? (
+                <button
+                  type="button"
+                  onClick={() => { setShowAddCategory(true); setCategoryError('') }}
+                  style={{
+                    width: '100%', padding: '8px', borderRadius: '8px',
+                    border: '1px dashed var(--border-color)', backgroundColor: 'transparent',
+                    color: 'var(--accent-blue)', cursor: 'pointer', fontSize: '13px',
+                    marginTop: '6px',
+                  }}
+                >
+                  + {tr('إضافة فئة جديدة')}
+                </button>
+              ) : (
+                <div style={{ marginTop: '8px', padding: '12px', backgroundColor: 'var(--bg-primary)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <select
+                      value={newCategoryIcon}
+                      onChange={(e) => setNewCategoryIcon(e.target.value)}
+                      aria-label={tr('أيقونة الفئة')}
+                      style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '16px', width: '70px' }}
+                    >
+                      {CATEGORY_EMOJI_CHOICES.map((e) => <option key={e} value={e}>{e}</option>)}
+                    </select>
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      // Enter adds the category instead of submitting the transaction form
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCategory() } }}
+                      placeholder={tr('اسم الفئة')}
+                      aria-label={tr('اسم الفئة')}
+                      maxLength={30}
+                      autoFocus
+                      style={{
+                        flex: 1, minWidth: 0, padding: '8px 12px', borderRadius: '8px',
+                        border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)', fontSize: '14px',
+                      }}
+                    />
+                  </div>
+                  {categoryError && <p role="alert" style={{ color: 'var(--accent-red)', fontSize: '12px', marginBottom: '8px' }}>{categoryError}</p>}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      disabled={!newCategoryName.trim() || addingCategory}
+                      onClick={handleAddCategory}
+                      style={{
+                        flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
+                        backgroundColor: newCategoryName.trim() && !addingCategory ? 'var(--accent-blue)' : 'var(--border-color)',
+                        color: '#fff', cursor: newCategoryName.trim() && !addingCategory ? 'pointer' : 'not-allowed', fontSize: '13px', fontWeight: 600,
+                      }}
+                    >
+                      {addingCategory ? tr('جاري الإضافة...') : tr('إضافة')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowAddCategory(false); setNewCategoryName(''); setCategoryError('') }}
+                      style={{
+                        padding: '8px 14px', borderRadius: '8px',
+                        border: '1px solid var(--border-color)', backgroundColor: 'transparent',
+                        color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '13px',
+                      }}
+                    >
+                      {tr('إلغاء')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

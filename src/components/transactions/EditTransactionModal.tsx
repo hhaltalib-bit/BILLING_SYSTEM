@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { updateTransaction } from '@/app/(dashboard)/transactions/actions'
 import { useT } from '@/lib/i18n'
+import { categoryEmoji } from '@/lib/categoryIcons'
 import type { Transaction, Category } from '@/types/transaction'
 
 interface Props {
@@ -73,7 +74,7 @@ export function EditTransactionModal({ transaction: tx, categories, onClose, onS
             <label htmlFor="edit-tx-category" style={labelStyle}>{t('الفئة')}</label>
             <select id="edit-tx-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} style={inputStyle}>
               <option value="">{t('بدون فئة')}</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{t(c.name)}</option>)}
+              {categories.map((c) => <option key={c.id} value={c.id}>{categoryEmoji(c.icon)} {t(c.name)}</option>)}
             </select>
           </div>
         )}

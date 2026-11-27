@@ -461,6 +461,22 @@ const pageTranslations: Record<string, { en: string }> = {
   "راتب الشهر المستلم": { en: "Salary received" },
   "الراتب المتوقع": { en: "Expected salary" },
   "راتب شهر": { en: "Salary for" },
+  // ── Fix batch 6: categories, one-click salary ──
+  "إضافة فئة جديدة": { en: "Add new category" },
+  "اسم الفئة": { en: "Category name" },
+  "أيقونة الفئة": { en: "Category icon" },
+  "أدخل اسم الفئة": { en: "Enter a category name" },
+  "اسم الفئة طويل جداً": { en: "Category name is too long" },
+  "الفئة موجودة مسبقاً": { en: "This category already exists" },
+  "الفئات": { en: "Categories" },
+  "الفئات الافتراضية ثابتة 🔒. يمكنك إضافة فئات جديدة من نافذة إضافة حركة، وحذف فئاتك هنا.": { en: "Default categories are fixed 🔒. Add new categories from the Add Transaction window, and delete your own here." },
+  "فئة افتراضية": { en: "Default category" },
+  "فئاتي": { en: "My categories" },
+  "لا توجد فئات مخصصة بعد": { en: "No custom categories yet" },
+  "الحركات بهذه الفئة ستصبح بدون فئة، وحدود الميزانية الخاصة بها ستُحذف.": { en: "Transactions in this category will become uncategorized, and its budget limits will be removed." },
+  "لم تضبط راتبك بعد — اذهب للإعدادات": { en: "Salary not set — go to Settings" },
+  "الراتب مضاف مسبقاً هذا الشهر": { en: "Salary already added this month" },
+  "الراتب مضاف مسبقاً لشهر": { en: "Salary already added for" },
 }
 
 export function translateArabic(arabic: string, lang: 'ar' | 'en'): string {

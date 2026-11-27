@@ -49,7 +49,8 @@ INSERT INTO public.categories (user_id, name_ar, name_en, icon, is_default) VALU
   (NULL, 'ألعاب',     'Gaming',       'game',   TRUE),
   (NULL, 'صيانة',     'Maintenance',  'wrench', TRUE),
   (NULL, 'صحة',       'Health',       'heart',  TRUE),
-  (NULL, 'ملابس',     'Clothing',     'shirt',  TRUE);
+  (NULL, 'ملابس',     'Clothing',     'shirt',  TRUE),
+  (NULL, 'أخرى',      'Other',        'other',  TRUE);
 
 -- transactions: income / expense / transfer
 CREATE TABLE public.transactions (

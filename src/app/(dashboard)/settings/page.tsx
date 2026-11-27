@@ -3,6 +3,7 @@
 import { NumericInput } from '@/components/ui/NumericInput'
 import { useState, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { CategoriesSettings } from '@/components/settings/CategoriesSettings'
 import { getSettingsData, updateProfile, updateSystemSettings, getWallets, updateWalletBalance, resetUserData, type SettingsWallet } from './actions'
 import { useT } from '@/lib/i18n'
 import { useAppStore } from '@/store/useAppStore'
@@ -327,6 +328,9 @@ export default function SettingsPage() {
           </form>
         </div>
       )}
+
+      {/* ── Categories ── */}
+      <CategoriesSettings />
 
       {/* ── Danger Zone ── */}
       <div className="card" style={{ border: '2px solid var(--accent-red)', marginTop: '32px' }}>

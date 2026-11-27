@@ -40,20 +40,34 @@ async function loadFormData(supabase: Awaited<ReturnType<typeof createServerSupa
       label:       walletLabels[w.type] ?? w.type,
     }))
 
-  // Categories: global defaults (user_id IS NULL) + the user's own
-  const { data: catsData } = await supabase
-    .from('categories')
-    .select('id, name_ar')
-    .or(`user_id.is.null,user_id.eq.${userId}`)
-    .order('name_ar')
-
-  const categories: Category[] = ((catsData ?? []) as { id: string; name_ar: string }[]).map((c) => ({
-    id:   c.id,
-    name: c.name_ar,
-    type: 'both',
-  }))
+  const categories = await loadCategories(supabase, userId)
 
   return { wallets, categories }
+}
+
+// Categories: global defaults (user_id IS NULL) + the user's own.
+// Order: defaults A–Z, then the user's own A–Z, with "Other" last.
+async function loadCategories(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, userId: string): Promise<Category[]> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, name_ar, icon, user_id')
+    .or(`user_id.is.null,user_id.eq.${userId}`)
+    .order('name_ar')
+  if (error) throw new Error(error.message)
+
+  const rows = (data ?? []) as { id: string; name_ar: string; icon: string | null; user_id: string | null }[]
+  const rank = (c: { name_ar: string; user_id: string | null }) => (c.name_ar === 'أخرى' ? 2 : c.user_id ? 1 : 0)
+  return rows
+    .sort((a, b) => rank(a) - rank(b) || a.name_ar.localeCompare(b.name_ar, 'ar'))
+    .map((c) => ({ id: c.id, name: c.name_ar, type: 'both', icon: c.icon ?? 'tag', is_custom: c.user_id !== null }))
+}
+
+/** All categories visible to the user (Settings → Categories). */
+export async function getCategories(): Promise<Category[]> {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  return loadCategories(supabase, user.id)
 }
 
 /** Lightweight: only what the Add Transaction modal needs (no transaction list). */
@@ -338,22 +352,58 @@ export async function updateTransaction(id: string, input: UpdateTransactionInpu
   return { success: true }
 }
 
-// ── Add Category ─────────────────────────────────────────────
+// ── Categories (custom) ──────────────────────────────────────
 
-// `type` is accepted for API compatibility; the categories table has no type column.
-export async function addCategory(name: string, type: TxType | 'both') {
-  void type
+const CATEGORY_NAME_MAX = 30
+
+/** Create a custom category for the current user. Names are unique per user
+ *  (case-insensitive), including against the shared defaults. */
+export async function addCategory(name: string, icon: string): Promise<{ success: boolean; category?: Category; error?: string }> {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+  if (!user) return { success: false, error: 'Not authenticated' }
 
-  const { error } = await supabase.from('categories').insert({
-    user_id: user.id,
-    name_ar: name,
-    name_en: name,
-    icon:    'tag',
-  })
+  const clean = name.trim().replace(/\s+/g, ' ')
+  if (!clean) return { success: false, error: 'أدخل اسم الفئة' }
+  if (clean.length > CATEGORY_NAME_MAX) return { success: false, error: 'اسم الفئة طويل جداً' }
+  const emoji = (icon || '📦').trim().slice(0, 8)
 
-  if (error) throw new Error(error.message)
+  const existing = await loadCategories(supabase, user.id)
+  const lower = clean.toLocaleLowerCase()
+  if (existing.some((c) => c.name.toLocaleLowerCase() === lower)) return { success: false, error: 'الفئة موجودة مسبقاً' }
+
+  const { data, error } = await supabase
+    .from('categories')
+    .insert({ user_id: user.id, name_ar: clean, name_en: clean, icon: emoji, is_default: false })
+    .select('id')
+    .single()
+  if (error) return { success: false, error: error.message }
+
   revalidatePath('/transactions')
+  revalidatePath('/settings')
+  return { success: true, category: { id: (data as { id: string }).id, name: clean, type: 'both', icon: emoji, is_custom: true } }
+}
+
+/** Delete one of the user's own categories (defaults cannot be deleted).
+ *  Transactions / recurring payments using it become "no category" (migration 006);
+ *  budget limits for it are removed (ON DELETE CASCADE). */
+export async function deleteCategory(id: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated' }
+
+  const { data: deleted, error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)      // own categories only — never the shared defaults
+    .select('id')
+  if (error) return { success: false, error: error.message }
+  if (!deleted || deleted.length === 0) return { success: false, error: 'الفئة غير موجودة' }
+
+  revalidatePath('/transactions')
+  revalidatePath('/settings')
+  revalidatePath('/budget')
+  revalidatePath('/dashboard')
+  return { success: true }
 }

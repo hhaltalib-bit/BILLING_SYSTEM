@@ -37,6 +37,7 @@ export function AddSalaryModal({ onClose, currentSalary = 0 }: Props) {
         const res = await updateSalary(val)
         setSalary(val)
         setError('')
+        if ('noSalarySet' in res) { setError(t('لم تضبط راتبك بعد — اذهب للإعدادات')); return }
         // The salary counts toward res.budgetMonth (next month when paid on/after the 25th)
         const already = 'alreadyPaid' in res
         const month = fmt.month(res.budgetMonth)

@@ -117,22 +117,34 @@ export async function setProfileSalary(salary_iqd: number) {
 // paid 2026-11-27 → budget_month 2026-12-01 (December's salary).
 // The duplicate guard is per budget month: "has December's salary already
 // been recorded?", not "was a salary recorded in November?".
+//
+// One-click: called with no amount, it pays the salary saved in Settings
+// (profiles.salary_iqd). Passing an amount first saves it as the new salary.
 export type UpdateSalaryResult =
-  | { success: true; budgetMonth: string }
+  | { success: true; budgetMonth: string; transactionId: string }
   | { alreadyPaid: true; budgetMonth: string }
+  | { noSalarySet: true }
 
-export async function updateSalary(salary_iqd: number): Promise<UpdateSalaryResult> {
+export async function updateSalary(amount?: number): Promise<UpdateSalaryResult> {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
-  if (!Number.isFinite(salary_iqd) || salary_iqd < 0) throw new Error('مبلغ غير صالح')
 
-  const { error } = await supabase
+  if (amount !== undefined) {
+    if (!Number.isFinite(amount) || amount < 0) throw new Error('مبلغ غير صالح')
+    const { error } = await supabase.from('profiles').update({ salary_iqd: amount }).eq('id', user.id)
+    if (error) throw new Error(error.message)
+  }
+
+  const { data: profile, error: profErr } = await supabase
     .from('profiles')
-    .update({ salary_iqd })
+    .select('salary_iqd')
     .eq('id', user.id)
+    .single()
+  if (profErr) throw new Error(profErr.message)
 
-  if (error) throw new Error(error.message)
+  const salary_iqd = Number(profile?.salary_iqd ?? 0)
+  if (!(salary_iqd > 0)) return { noSalarySet: true }
 
   const today       = todayISO()                      // users' local day (Iraq)
   const budgetMonth = budgetMonthFor(today, true)     // YYYY-MM-01 of the month this salary funds
@@ -153,40 +165,38 @@ export async function updateSalary(salary_iqd: number): Promise<UpdateSalaryResu
     return { alreadyPaid: true, budgetMonth }
   }
 
-  if (salary_iqd > 0) {
-    // Into the user's IQD wallet. wallets has no currency column — IQD wallets
-    // are cash_iqd / savings_iqd; prefer cash_iqd.
-    const { data: iqdWallets, error: wErr } = await supabase
-      .from('wallets')
-      .select('id, type')
-      .eq('user_id', user.id)
-      .in('type', ['cash_iqd', 'savings_iqd'])
-      .order('created_at', { ascending: true })
+  // Into the user's IQD wallet. wallets has no currency column — IQD wallets
+  // are cash_iqd / savings_iqd; prefer cash_iqd.
+  const { data: iqdWallets, error: wErr } = await supabase
+    .from('wallets')
+    .select('id, type')
+    .eq('user_id', user.id)
+    .in('type', ['cash_iqd', 'savings_iqd'])
+    .order('created_at', { ascending: true })
 
-    if (wErr) throw new Error(wErr.message)
-    const wallet = iqdWallets?.find((w) => w.type === 'cash_iqd') ?? iqdWallets?.[0]
-    if (!wallet) throw new Error('لا توجد محفظة بالدينار العراقي')
+  if (wErr) throw new Error(wErr.message)
+  const wallet = iqdWallets?.find((w) => w.type === 'cash_iqd') ?? iqdWallets?.[0]
+  if (!wallet) throw new Error('لا توجد محفظة بالدينار العراقي')
 
-    const { error: txErr } = await supabase.from('transactions').insert({
-      user_id:         user.id,
-      type:            'income',
-      amount:          salary_iqd,
-      currency:        'IQD',
-      wallet_to_id:    wallet.id,       // income flows INTO the wallet
-      note:            'راتب شهري',
-      date:            today,
-      is_salary:       true,
-      budget_month:    budgetMonth,
-      // The DB trigger (migration 004) credits the wallet atomically.
-      balance_applied: true,
-    })
-    if (txErr) throw new Error(txErr.message)
-  }
+  const { data: inserted, error: txErr } = await supabase.from('transactions').insert({
+    user_id:         user.id,
+    type:            'income',
+    amount:          salary_iqd,
+    currency:        'IQD',
+    wallet_to_id:    wallet.id,       // income flows INTO the wallet
+    note:            'راتب شهري',
+    date:            today,
+    is_salary:       true,
+    budget_month:    budgetMonth,
+    // The DB trigger (migration 004) credits the wallet atomically.
+    balance_applied: true,
+  }).select('id').single()
+  if (txErr) throw new Error(txErr.message)
 
   revalidatePath('/settings')
   revalidatePath('/dashboard')
   revalidatePath('/transactions')
-  return { success: true, budgetMonth }
+  return { success: true, budgetMonth, transactionId: (inserted as { id: string }).id }
 }
 
 // ── Wallet balances (initial setup / manual correction) ─────

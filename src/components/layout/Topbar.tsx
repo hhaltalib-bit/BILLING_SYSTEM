@@ -7,7 +7,10 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { createClient } from '@/lib/supabase/client'
 import { getTransactionFormData } from '@/app/(dashboard)/transactions/actions'
 import { AddTransactionModal } from '@/components/transactions/AddTransactionModal'
-import { AddSalaryModal } from '@/components/dashboard/AddSalaryModal'
+import { updateSalary } from '@/app/(dashboard)/settings/actions'
+import { deleteTransaction } from '@/app/(dashboard)/transactions/actions'
+import { showUndoToast } from '@/lib/useUndoToast'
+import { formatMonth } from '@/lib/utils'
 import { GlobalSearch } from '@/components/search/GlobalSearch'
 import { useT } from '@/lib/i18n'
 import type { Wallet, Category } from '@/types/transaction'
@@ -31,11 +34,10 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
     setLang,
     privacyMode, togglePrivacy,
     compactMode, toggleCompact,
-    salaryAmount,
   } = useAppStore()
 
   // Built-in modals, used when the parent does not pass handlers
-  const [showSalary, setShowSalary] = useState(false)
+  const [addingSalary, setAddingSalary] = useState(false)
   const [showTx, setShowTx] = useState(false)
   const [txKey, setTxKey] = useState(0)
   const [opening, setOpening] = useState(false)
@@ -77,6 +79,18 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
     return formDataPromise.current
   }
 
+  // Keep the cached wallets/categories fresh (e.g. after a category is added):
+  // refetch in the background; formData.current is replaced when it arrives.
+  useEffect(() => {
+    const onChanged = () => {
+      formDataPromise.current = null
+      loadFormData().catch(() => { /* retried on click */ })
+    }
+    window.addEventListener('finova:data-changed', onChanged)
+    return () => window.removeEventListener('finova:data-changed', onChanged)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     if (!onAddTransaction) loadFormData().catch(() => { /* retried on click */ })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,9 +113,31 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
     setShowTx(true)
   }
 
-  function openAddSalary() {
+  // One click: pays the salary saved in Settings — no modal. Feedback goes to
+  // the app-wide toast; on success it offers Undo (an accidental click is easy).
+  async function handleAddSalary() {
     if (onAddSalary) return onAddSalary()
-    setShowSalary(true)
+    if (addingSalary) return
+    setAddingSalary(true)
+    try {
+      const res = await updateSalary()
+      if ('noSalarySet' in res) {
+        showUndoToast(`⚠️ ${tr('لم تضبط راتبك بعد — اذهب للإعدادات')}`)
+      } else if ('alreadyPaid' in res) {
+        showUndoToast(`ℹ️ ${tr('الراتب مضاف مسبقاً لشهر')} ${formatMonth(res.budgetMonth, lang)}`)
+      } else {
+        const txId = res.transactionId
+        showUndoToast(`✅ ${tr('تم إضافة راتب شهر')} ${formatMonth(res.budgetMonth, lang)}`, async () => {
+          const r = await deleteTransaction(txId)
+          if (!r.success) throw new Error(tr(r.error ?? 'حدث خطأ'))
+        })
+        notifyChanged()
+      }
+    } catch (err) {
+      showUndoToast(`❌ ${err instanceof Error ? err.message : tr('حدث خطأ')}`)
+    } finally {
+      setAddingSalary(false)
+    }
   }
 
   // After a successful save: tell client-rendered pages (e.g. /transactions)
@@ -176,13 +212,16 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
             color: 'var(--gold)',
             border: '1px solid rgba(245,158,11,0.3)',
             fontWeight: 600, fontSize: 13,
-            cursor: 'pointer',
+            cursor: addingSalary ? 'wait' : 'pointer',
+            opacity: addingSalary ? 0.7 : 1,
             whiteSpace: 'nowrap',
           }}
-          onClick={openAddSalary}
+          onClick={handleAddSalary}
+          disabled={addingSalary}
+          aria-busy={addingSalary}
         >
           <DollarSign size={15} />
-          {t('addSalary')}
+          {addingSalary ? '…' : t('addSalary')}
         </button>
       </div>
 
@@ -277,12 +316,6 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
         />
       )}
       <GlobalSearch isOpen={searchOpen} onClose={closeSearch} />
-      {showSalary && (
-        <AddSalaryModal
-          currentSalary={salaryAmount}
-          onClose={() => setShowSalary(false)}
-        />
-      )}
     </>
   )
 }

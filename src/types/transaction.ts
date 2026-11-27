@@ -5,6 +5,10 @@ export interface Category {
   id: string
   name: string
   type: TxType | 'both'
+  /** default categories: a key ('food', …); custom: an emoji — render with categoryEmoji() */
+  icon: string
+  /** true for the user's own categories (deletable); false for the shared defaults */
+  is_custom: boolean
 }
 
 export interface Transaction {
