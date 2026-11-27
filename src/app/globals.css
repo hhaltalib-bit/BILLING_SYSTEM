@@ -1,27 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg:      #080b10;
+  --s1:      #0d1117;
+  --s2:      #131920;
+  --s3:      #1a2332;
+  --s4:      #1e2a3a;
+  --text:    #e8edf5;
+  --text2:   #8b98a8;
+  --accent:  #3b82f6;
+  --accent2: #10b981;
+  --danger:  #ef4444;
+  --gold:    #f59e0b;
+  --radius:  8px;
+  --sidebar: 240px;
+  --topbar:  56px;
+
+  --bg-primary:    #0f1117;
+  --bg-secondary:  #1a1d2e;
+  --text-primary:  #e2e8f0;
+  --text-secondary:#94a3b8;
+  --accent-blue:   #3b82f6;
+  --accent-green:  #22c55e;
+  --accent-red:    #ef4444;
+  --accent-gold:   #f59e0b;
+  --border-color:  #2d3748;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html[data-theme="light"] {
+  --bg:      #eef1f5;
+  --s1:      #f5f7fa;
+  --s2:      #eaecf0;
+  --s3:      #e2e5ea;
+  --s4:      #d5d9e0;
+  --text:    #0f1923;
+  --text2:   #4a5568;
+  --accent:  #2563eb;
+  --accent2: #059669;
+  --danger:  #dc2626;
+  --gold:    #d97706;
+
+  --bg-primary:    #f8fafc;
+  --bg-secondary:  #ffffff;
+  --text-primary:  #1e293b;
+  --text-secondary:#64748b;
+  --accent-blue:   #2563eb;
+  --accent-green:  #16a34a;
+  --accent-red:    #dc2626;
+  --accent-gold:   #d97706;
+  --border-color:  #e2e8f0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Card base ─────────────────────────────────────── */
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+
+.card:hover {
+  border-color: var(--accent-blue);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+html[dir="rtl"] body {
+  font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+}
+
+.font-mono, [data-mono] {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--s1); }
+::-webkit-scrollbar-thumb { background: var(--s4); border-radius: 3px; }
+
+html[data-compact="true"] .card { padding: 12px !important; }
+html[data-compact="true"] .card-gap { gap: 12px !important; }
+
+html[data-privacy="true"] [data-sensitive] {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.2s;
+}
+html[data-privacy="true"] [data-sensitive]:hover {
+  filter: blur(0);
 }

@@ -34,3 +34,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Finova secrets (never commit)
+.env.local
+
+# e2e test artifacts (contain real financial data)
+scripts/.e2e-snapshot.json
+scripts/screenshots/
+
+# all env files except the committed template
+.env
+.env*
+!.env.example
