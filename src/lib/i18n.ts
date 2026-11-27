@@ -479,6 +479,9 @@ const pageTranslations: Record<string, { en: string }> = {
   "الراتب مضاف مسبقاً لشهر": { en: "Salary already added for" },
   // ── AI Subscriptions category ──
   "اشتراكات الذكاء الاصطناعي": { en: "AI Subscriptions" },
+  // ── Cat Food & Snacks categories ──
+  "أكل القطط": { en: "Cat Food" },
+  "سناكس": { en: "Snacks" },
 }
 
 export function translateArabic(arabic: string, lang: 'ar' | 'en'): string {
