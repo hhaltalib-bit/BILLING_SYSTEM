@@ -50,6 +50,7 @@ INSERT INTO public.categories (user_id, name_ar, name_en, icon, is_default) VALU
   (NULL, 'صيانة',     'Maintenance',  'wrench', TRUE),
   (NULL, 'صحة',       'Health',       'heart',  TRUE),
   (NULL, 'ملابس',     'Clothing',     'shirt',  TRUE),
+  (NULL, 'اشتراكات الذكاء الاصطناعي', 'AI Subscriptions', 'ai', TRUE),
   (NULL, 'أخرى',      'Other',        'other',  TRUE);
 
 -- transactions: income / expense / transfer

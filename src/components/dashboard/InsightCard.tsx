@@ -13,7 +13,7 @@ interface Props {
 // Keyed by the stored (Arabic) names of the default categories
 const CATEGORY_EMOJI: Record<string, string> = {
   'أكل': '🍔', 'كهرباء': '💡', 'سيارة': '🚗', 'إيجار': '🏠', 'كورسات': '📚',
-  'امتحانات': '📝', 'ألعاب': '🎮', 'صيانة': '🔧', 'صحة': '💊', 'ملابس': '👕', 'أخرى': '📦',
+  'امتحانات': '📝', 'ألعاب': '🎮', 'صيانة': '🔧', 'صحة': '💊', 'ملابس': '👕', 'اشتراكات الذكاء الاصطناعي': '🤖', 'أخرى': '📦',
 }
 
 export function InsightCard({ categories, tooltip }: Props) {

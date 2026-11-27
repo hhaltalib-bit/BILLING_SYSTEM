@@ -4,6 +4,7 @@
 const DEFAULT_ICON_EMOJI: Record<string, string> = {
   food: '🍔', elec: '💡', car: '🚗', home: '🏠', book: '📚', exam: '📝',
   game: '🎮', wrench: '🔧', heart: '💊', shirt: '👕', other: '📦', tag: '🏷️',
+  ai: '🤖',
 }
 
 /** Emojis offered when creating a custom category. */

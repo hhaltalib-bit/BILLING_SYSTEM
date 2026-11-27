@@ -477,6 +477,8 @@ const pageTranslations: Record<string, { en: string }> = {
   "لم تضبط راتبك بعد — اذهب للإعدادات": { en: "Salary not set — go to Settings" },
   "الراتب مضاف مسبقاً هذا الشهر": { en: "Salary already added this month" },
   "الراتب مضاف مسبقاً لشهر": { en: "Salary already added for" },
+  // ── AI Subscriptions category ──
+  "اشتراكات الذكاء الاصطناعي": { en: "AI Subscriptions" },
 }
 
 export function translateArabic(arabic: string, lang: 'ar' | 'en'): string {
