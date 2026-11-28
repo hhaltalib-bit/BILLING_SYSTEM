@@ -487,6 +487,11 @@ const pageTranslations: Record<string, { en: string }> = {
   // ── Cat Food & Snacks categories ──
   "أكل القطط": { en: "Cat Food" },
   "سناكس": { en: "Snacks" },
+  // ── Login: show/hide password ──
+  "إظهار كلمة السر": { en: "Show password" },
+  "إخفاء كلمة السر": { en: "Hide password" },
+  // ── Page transition ──
+  "جاري تحميل الصفحة": { en: "Loading page" },
 }
 
 export function translateArabic(arabic: string, lang: 'ar' | 'en'): string {

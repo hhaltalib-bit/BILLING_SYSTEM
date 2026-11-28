@@ -170,7 +170,7 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
 
   return (
     <>
-    <header style={{
+    <header className="topbar" style={{
       position: 'fixed',
       top: 0,
       insetInlineStart: 'var(--sidebar)',
@@ -200,7 +200,7 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
           disabled={opening}
         >
           <Plus size={15} />
-          {t('addTransaction')}
+          <span className="topbar-action-label">{t('addTransaction')}</span>
         </button>
 
         <button
@@ -221,7 +221,7 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
           aria-busy={addingSalary}
         >
           <DollarSign size={15} />
-          {addingSalary ? '…' : t('addSalary')}
+          {addingSalary ? '…' : <span className="topbar-action-label">{t('addSalary')}</span>}
         </button>
       </div>
 
@@ -243,8 +243,8 @@ export function Topbar({ onAddTransaction, onAddSalary }: TopbarProps) {
         }}
       >
         <Search size={15} />
-        <span>{tr('بحث')}</span>
-        <kbd style={{ fontSize: 11, opacity: 0.6, fontFamily: 'inherit' }}>Ctrl+K</kbd>
+        <span className="topbar-action-label">{tr('بحث')}</span>
+        <kbd className="topbar-kbd" style={{ fontSize: 11, opacity: 0.6, fontFamily: 'inherit' }}>Ctrl+K</kbd>
       </button>
 
       {/* Toggle buttons */}

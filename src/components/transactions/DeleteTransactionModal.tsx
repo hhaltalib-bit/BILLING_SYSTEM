@@ -56,10 +56,11 @@ export function DeleteTransactionModal({ transaction: tx, onClose, onDeleted }: 
 
   return (
     <div
+      className="modal-overlay"
       style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', padding: '16px' }}
       onClick={(e) => e.target === e.currentTarget && !loading && onClose()}
     >
-      <div className="card" role="alertdialog" aria-modal="true" aria-label={t('حذف الحركة')} style={{ width: '100%', maxWidth: '420px' }}>
+      <div className="card modal-card" role="alertdialog" aria-modal="true" aria-label={t('حذف الحركة')} style={{ width: '100%', maxWidth: '420px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }} aria-hidden="true">🗑️</div>
           <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--accent-red)' }}>{t('حذف الحركة')}</h2>

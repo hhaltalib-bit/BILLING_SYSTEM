@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 import { OnboardingCheck } from '@/components/onboarding/OnboardingCheck'
 import { UndoToastHost } from '@/components/ui/UndoToast'
+import { PageTransition } from '@/components/ui/PageTransition'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -22,9 +23,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <AppProvider>
-      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg)' }}>
+      <div className="dashboard-layout" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg)' }}>
         <Sidebar isAdmin={isAdmin} />
-        <div style={{
+        <div className="app-content" style={{
           marginInlineStart: 'var(--sidebar)',
           flex: 1,
           display: 'flex',
@@ -32,7 +33,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           minHeight: '100vh',
         }}>
           <Topbar />
-          <main style={{
+          <main className="main-content" style={{
             marginTop: 'var(--topbar)',
             padding: '24px',
             flex: 1,
@@ -43,6 +44,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </div>
       <UndoToastHost />
+      <PageTransition />
     </AppProvider>
   )
 }

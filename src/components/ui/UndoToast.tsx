@@ -59,6 +59,7 @@ export function UndoToast({ message, onUndo, onDismiss, duration = 5000 }: Props
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
+      className="undo-toast"
       style={{
         position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
         zIndex: 9999, width: 'calc(100% - 32px)', maxWidth: '480px',

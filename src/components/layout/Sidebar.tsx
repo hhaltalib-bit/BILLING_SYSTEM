@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { NavLink } from '@/components/ui/NavLink'
 import { usePathname } from 'next/navigation'
 import { useTranslation } from '@/hooks/useTranslation'
 import { ROUTES } from '@/lib/constants'
@@ -25,8 +25,40 @@ export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
   const pathname = usePathname()
   const { t } = useTranslation()
 
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+  const mobileItems = [
+    ...NAV_ITEMS.map((i) => ({ key: i.key as string, icon: i.icon, href: i.href as string, color: 'var(--accent-blue)' })),
+    ...(isAdmin ? [{ key: 'admin', icon: ShieldCheck, href: ROUTES.admin as string, color: 'var(--gold)' }] : []),
+  ]
+
   return (
-    <aside style={{
+    <>
+    {/* Mobile: bottom navigation (shown ≤768px via CSS — no hydration flash) */}
+    <nav className="mobile-nav" aria-label="Finova">
+      {mobileItems.map(({ key, icon: Icon, href, color }) => {
+        const active = isActive(href)
+        return (
+          <NavLink
+            key={key}
+            href={href}
+            aria-current={active ? 'page' : undefined}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: '2px', padding: '8px 10px', borderRadius: '10px',
+              color: active ? color : 'var(--text-secondary)',
+              textDecoration: 'none', fontSize: '10px', minWidth: '56px',
+              flex: '1 0 auto', whiteSpace: 'nowrap',
+              backgroundColor: active ? 'rgba(59,130,246,0.1)' : 'transparent',
+            }}
+          >
+            <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
+            <span>{t(key as Parameters<typeof t>[0])}</span>
+          </NavLink>
+        )
+      })}
+    </nav>
+
+    <aside className="sidebar" style={{
       width: 'var(--sidebar)',
       minHeight: '100vh',
       backgroundColor: 'var(--s1)',
@@ -68,9 +100,9 @@ export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
       {/* Navigation */}
       <nav style={{ flex: 1, padding: '12px 8px' }}>
         {NAV_ITEMS.map(({ key, icon: Icon, href }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
+          const active = isActive(href)
           return (
-            <Link key={key} href={href} style={{
+            <NavLink key={key} href={href} style={{
               display: 'flex',
               alignItems: 'center',
               gap: 10,
@@ -86,7 +118,7 @@ export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
             }}>
               <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
               <span>{t(key)}</span>
-            </Link>
+            </NavLink>
           )
         })}
 
@@ -94,7 +126,7 @@ export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
         {isAdmin && (
           <>
             <div style={{ height: 1, background: 'var(--s4)', margin: '8px 4px' }} />
-            <Link href={ROUTES.admin} style={{
+            <NavLink href={ROUTES.admin} style={{
               display: 'flex',
               alignItems: 'center',
               gap: 10,
@@ -109,7 +141,7 @@ export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
             }}>
               <ShieldCheck size={18} />
               <span>{t('admin')}</span>
-            </Link>
+            </NavLink>
           </>
         )}
       </nav>
@@ -125,5 +157,6 @@ export function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
         Finova v1.0.0
       </div>
     </aside>
+    </>
   )
 }

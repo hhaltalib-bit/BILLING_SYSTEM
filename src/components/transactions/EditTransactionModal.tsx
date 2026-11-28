@@ -59,10 +59,11 @@ export function EditTransactionModal({ transaction: tx, categories, onClose, onS
 
   return (
     <div
+      className="modal-overlay"
       style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)', padding: '16px' }}
       onClick={(e) => e.target === e.currentTarget && !loading && onClose()}
     >
-      <form onSubmit={handleSave} className="card" role="dialog" aria-modal="true" aria-label={t('تعديل الحركة')} style={{ width: '100%', maxWidth: '440px' }}>
+      <form onSubmit={handleSave} className="card modal-card" role="dialog" aria-modal="true" aria-label={t('تعديل الحركة')} style={{ width: '100%', maxWidth: '440px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '20px', color: 'var(--text-primary)' }}>✏️ {t('تعديل الحركة')}</h2>
 
         <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px', backgroundColor: 'var(--bg-primary)', padding: '10px 14px', borderRadius: '8px' }}>

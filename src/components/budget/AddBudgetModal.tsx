@@ -43,10 +43,11 @@ export function AddBudgetModal({ categories, onClose }: Props) {
 
   return (
     <div
+      className="modal-overlay"
       style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="card" role="dialog" aria-modal="true" aria-label={t('إضافة حد ميزانية')} style={{ width: '100%', maxWidth: '420px', margin: '16px' }}>
+      <div className="card modal-card" role="dialog" aria-modal="true" aria-label={t('إضافة حد ميزانية')} style={{ width: '100%', maxWidth: '420px', margin: '16px' }}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{t('إضافة حد ميزانية')}</h2>
           <button onClick={onClose} style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer' }}>

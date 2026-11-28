@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useT } from '@/lib/i18n'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -10,6 +11,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const t = useT()
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -83,19 +86,44 @@ export default function LoginPage() {
             <label style={{ display: 'block', fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              style={{
-                width: '100%', padding: '10px 14px',
-                backgroundColor: 'var(--s2)',
-                border: '1px solid var(--s4)',
-                borderRadius: 'var(--radius)',
-                color: 'var(--text)', fontSize: 14, outline: 'none',
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                style={{
+                  width: '100%', padding: '10px 14px',
+                  paddingInlineEnd: '44px', // room for the toggle
+                  backgroundColor: 'var(--s2)',
+                  border: '1px solid var(--s4)',
+                  borderRadius: 'var(--radius)',
+                  color: 'var(--text)', fontSize: 14, outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                style={{
+                  position: 'absolute',
+                  insetInlineEnd: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-secondary)',
+                  fontSize: '18px',
+                  padding: '4px',
+                  lineHeight: 1,
+                }}
+                aria-label={showPassword ? t('إخفاء كلمة السر') : t('إظهار كلمة السر')}
+                title={showPassword ? t('إخفاء كلمة السر') : t('إظهار كلمة السر')}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           {error && (

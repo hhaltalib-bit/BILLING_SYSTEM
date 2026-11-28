@@ -128,6 +128,7 @@ export function AddTransactionModal({ wallets, categories, onClose, onSuccess }:
 
   return (
     <div
+      className="modal-overlay"
       style={{
         position:        'fixed', inset: 0, zIndex: 50,
         display:         'flex', alignItems: 'center', justifyContent: 'center',
@@ -136,7 +137,7 @@ export function AddTransactionModal({ wallets, categories, onClose, onSuccess }:
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="card"
+        className="card modal-card"
         role="dialog"
         aria-modal="true"
         aria-label={tr('إضافة معاملة')}
